@@ -1,12 +1,12 @@
 package fr.memed.recipesapi.service;
 
-import fr.memed.recipesapi.mapper.MarmitonSearchMapper;
-import fr.memed.recipesapi.model.SearchElement;
+import fr.memed.recipesapi.dto.Recipe;
+import fr.memed.recipesapi.dto.SearchElement;
+import fr.memed.recipesapi.mapper.RecipeMapper;
+import fr.memed.recipesapi.mapper.SearchMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -16,28 +16,42 @@ import java.util.Objects;
 @Service
 public class MarmitonService {
 
-    private final MarmitonSearchMapper marmitonSearchMapper;
+    private final SearchMapper searchMapper;
+    private final RecipeMapper recipeMapper;
     @Value("${marmiton.url}")
-    private String marmitonEndpoint;
+    private String marmitonUrl;
 
-    public MarmitonService(MarmitonSearchMapper marmitonSearchMapper) {
-        this.marmitonSearchMapper = marmitonSearchMapper;
+    @Value("${marmiton.search-endpoint}")
+    private String marmitonSearch;
+
+    public MarmitonService(final SearchMapper searchMapper,
+                           final RecipeMapper recipeMapper) {
+        this.searchMapper = searchMapper;
+        this.recipeMapper = recipeMapper;
     }
 
-    public ResponseEntity<List<SearchElement>> searchRecipes(String filter) {
+    public List<SearchElement> searchRecipes(String filter) {
         try {
-            Document document = Jsoup.connect(marmitonEndpoint + filter).get();
-            List<SearchElement> searchElementList = Objects.requireNonNull(document
+            Document document = Jsoup.connect(marmitonUrl + marmitonSearch + filter).get();
+            return Objects.requireNonNull(document
                             .getElementsByClass("MRTN__sc-1gofnyi-0 YLcEb")
                             .first())
                     .childNodes()
                     .stream()
-                    .map(marmitonSearchMapper::fromMarmiton)
+                    .map(searchMapper::fromMarmiton)
                     .toList();
-            return new ResponseEntity<>(searchElementList, HttpStatus.OK);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
+    public Recipe searchRecipe(String recipeName) {
+        try {
+            Document document = Jsoup.connect(marmitonUrl + recipeName).get();
+            return recipeMapper.fromMarmiton(document);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
