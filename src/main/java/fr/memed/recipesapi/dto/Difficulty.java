@@ -6,7 +6,7 @@ public enum Difficulty {
 
     VERY_EASY("très facile"),
     EASY("facile"),
-    NORMAL("moyen"),
+    NORMAL("moyenne"),
     HARD("difficile"),
     VERY_HARD("très difficile");
 
