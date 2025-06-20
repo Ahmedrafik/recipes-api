@@ -1,6 +1,8 @@
 package fr.memed.recipesapi.mapper;
 
 import fr.memed.recipesapi.dto.SearchElement;
+import fr.memed.recipesapi.utils.Constants;
+import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.mapstruct.Mapper;
@@ -8,10 +10,10 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public abstract class SearchMapper {
 
-    public SearchElement fromMarmiton(Node node) {
-        String title = ((TextNode) node.childNode(0).childNode(1).childNode(0)).text();
-        String recipeUrl = node.attr("href");
-        String pictureUrl = node.childNode(0).childNode(0).childNode(0).attr("src");
+    public SearchElement fromMarmiton(Element element) {
+        String title = element.select(Constants.TITLE_CLASS).text();
+        String recipeUrl = element.select("a").attr("abs:href");
+        String pictureUrl = element.select(".recipe-card__picture img").attr("data-src");
         return new SearchElement(title, recipeUrl, pictureUrl);
     }
 }

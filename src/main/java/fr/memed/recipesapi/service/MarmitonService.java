@@ -4,6 +4,7 @@ import fr.memed.recipesapi.dto.Recipe;
 import fr.memed.recipesapi.dto.SearchElement;
 import fr.memed.recipesapi.mapper.RecipeMapper;
 import fr.memed.recipesapi.mapper.SearchMapper;
+import fr.memed.recipesapi.utils.Constants;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,14 +33,23 @@ public class MarmitonService {
 
     public List<SearchElement> searchRecipes(String filter) {
         try {
-            Document document = Jsoup.connect(marmitonUrl + marmitonSearch + filter).get();
-            return Objects.requireNonNull(document
-                            .getElementsByClass("MRTN__sc-1gofnyi-0 YLcEb")
-                            .first())
-                    .childNodes()
+            Document document = Jsoup.connect(marmitonUrl + marmitonSearch + filter)
+                                     .userAgent("Mozilla/5.0")
+                                     .timeout(10_000)
+                                     .get();
+
+            return document.select(".recipe-card-algolia")
                     .stream()
                     .map(searchMapper::fromMarmiton)
                     .toList();
+//            return Objects.requireNonNull(document
+//                            .getElementsByClass(Constants.RECIPE_LIST_CLASS)
+//                            .first())
+//                    .childNodes()
+//                    .stream()
+//                    .filter(node -> !node.childNodes().isEmpty())
+//                    .map(searchMapper::fromMarmiton)
+//                    .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

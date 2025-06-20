@@ -24,7 +24,7 @@ public class MarmitonController {
 
 
     @GetMapping
-    public ResponseEntity<List<SearchElement>> recipes(@RequestHeader String filter) {
+    public ResponseEntity<List<SearchElement>> recipes(@RequestHeader(required = false, defaultValue = "") String filter) {
         return new ResponseEntity<>(marmitonService.searchRecipes(filter), HttpStatus.OK);
     }
 
